@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { getAllChildren, deleteChild, clearAllData, changePasscode, verifyPasscode } from '../../services/storage';
+import { useState, useEffect, useRef } from 'react';
+import { getAllChildren, deleteChild, clearAllData, changePasscode, verifyPasscode, downloadBackup, importData } from '../../services/storage';
 import { AVATARS } from '../../utils/constants';
 import type { Child } from '../../types';
 import Modal from '../common/Modal';
@@ -38,6 +38,11 @@ export default function SettingsTab() {
   const [newPasscode, setNewPasscode] = useState('');
   const [confirmPasscode, setConfirmPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
+
+  // Backup/Restore state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [restoreResult, setRestoreResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     refreshChildren();
@@ -222,6 +227,43 @@ export default function SettingsTab() {
     setShowChangePasscode(false);
   };
 
+  // Backup handlers
+  const handleBackup = () => {
+    downloadBackup();
+  };
+
+  const handleRestoreClick = () => {
+    setShowRestoreConfirm(true);
+  };
+
+  const handleRestoreConfirm = () => {
+    setShowRestoreConfirm(false);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      const result = importData(content);
+      setRestoreResult(result);
+
+      if (result.success) {
+        // Reload page after successful restore
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset input
+    event.target.value = '';
+  };
+
   return (
     <div className="flex-1 overflow-y-auto hide-scrollbar pb-20">
       <div className="px-4 py-6">
@@ -282,6 +324,42 @@ export default function SettingsTab() {
             <span className="flex-1 text-gray-800">Đổi mã PIN</span>
             <span className="text-gray-400">→</span>
           </button>
+        </div>
+
+        {/* Backup & Restore */}
+        <div className="bg-white rounded-2xl shadow-sm mb-6">
+          <h2 className="px-4 py-3 font-bold text-gray-800 border-b border-gray-100">
+            💾 Sao lưu & Khôi phục
+          </h2>
+          <button
+            onClick={handleBackup}
+            className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 border-b border-gray-100"
+          >
+            <span className="text-xl">📤</span>
+            <div className="flex-1">
+              <span className="text-gray-800 block">Sao lưu dữ liệu</span>
+              <span className="text-gray-500 text-xs">Tải file backup về máy</span>
+            </div>
+            <span className="text-gray-400">→</span>
+          </button>
+          <button
+            onClick={handleRestoreClick}
+            className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50"
+          >
+            <span className="text-xl">📥</span>
+            <div className="flex-1">
+              <span className="text-gray-800 block">Khôi phục dữ liệu</span>
+              <span className="text-gray-500 text-xs">Nhập file backup đã lưu</span>
+            </div>
+            <span className="text-gray-400">→</span>
+          </button>
+        </div>
+
+        {/* Backup tip */}
+        <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 mb-6">
+          <p className="text-sm text-purple-700">
+            💡 <strong>Mẹo:</strong> Hãy sao lưu dữ liệu thường xuyên và lưu file backup vào Google Drive, iCloud hoặc gửi qua Zalo để tránh mất dữ liệu!
+          </p>
         </div>
 
         {/* Danger Zone */}
@@ -608,6 +686,76 @@ export default function SettingsTab() {
           </div>
         )}
       </Modal>
+
+      {/* Restore Confirm Modal */}
+      <Modal
+        isOpen={showRestoreConfirm}
+        onClose={() => setShowRestoreConfirm(false)}
+        title="📥 Khôi phục dữ liệu"
+      >
+        <div className="text-center mb-6">
+          <p className="text-5xl mb-4">⚠️</p>
+          <p className="text-gray-600 mb-2">
+            <strong className="text-amber-600">Lưu ý:</strong> Dữ liệu hiện tại sẽ bị thay thế hoàn toàn bởi dữ liệu trong file backup!
+          </p>
+          <p className="text-gray-500 text-sm">
+            Hãy chắc chắn bạn đã sao lưu dữ liệu hiện tại trước khi khôi phục.
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowRestoreConfirm(false)}
+            className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={handleRestoreConfirm}
+            className="flex-1 py-3 bg-purple-500 text-white font-semibold rounded-xl hover:bg-purple-600"
+          >
+            Chọn file backup
+          </button>
+        </div>
+      </Modal>
+
+      {/* Restore Result Modal */}
+      <Modal
+        isOpen={!!restoreResult}
+        onClose={() => setRestoreResult(null)}
+        title={restoreResult?.success ? '✅ Thành công!' : '❌ Lỗi'}
+      >
+        <div className="text-center">
+          <p className="text-5xl mb-4">
+            {restoreResult?.success ? '🎉' : '😢'}
+          </p>
+          <p className={`mb-6 ${restoreResult?.success ? 'text-green-600' : 'text-red-600'}`}>
+            {restoreResult?.message}
+          </p>
+          {restoreResult?.success && (
+            <p className="text-gray-500 text-sm mb-4">
+              Trang sẽ tự động tải lại trong giây lát...
+            </p>
+          )}
+          {!restoreResult?.success && (
+            <button
+              onClick={() => setRestoreResult(null)}
+              className="w-full py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200"
+            >
+              Đóng
+            </button>
+          )}
+        </div>
+      </Modal>
+
+      {/* Hidden file input for restore */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json,application/json"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
     </div>
   );
 }

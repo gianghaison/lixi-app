@@ -376,3 +376,73 @@ export const clearAllData = (): void => {
 export const isFirstTime = (): boolean => {
   return getAppData() === null;
 };
+
+// ============ Backup & Restore ============
+
+export const exportData = (): string => {
+  const data = getAppData();
+  if (!data) return '';
+
+  const exportPayload = {
+    version: '1.0',
+    exportDate: new Date().toISOString(),
+    data: data,
+  };
+
+  return JSON.stringify(exportPayload, null, 2);
+};
+
+export const downloadBackup = (): void => {
+  const jsonData = exportData();
+  if (!jsonData) {
+    alert('Không có dữ liệu để sao lưu!');
+    return;
+  }
+
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `lixi_backup_${date}.json`;
+
+  const blob = new Blob([jsonData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+export const importData = (jsonString: string): { success: boolean; message: string } => {
+  try {
+    const parsed = JSON.parse(jsonString);
+
+    // Validate backup structure
+    if (!parsed.version || !parsed.data) {
+      return { success: false, message: 'File backup không hợp lệ!' };
+    }
+
+    const data = parsed.data as LixiApp;
+
+    // Validate required fields
+    if (!data.passcode || !data.children || !Array.isArray(data.children)) {
+      return { success: false, message: 'Dữ liệu backup bị thiếu hoặc không đúng định dạng!' };
+    }
+
+    // Validate at least one child exists
+    if (data.children.length === 0) {
+      return { success: false, message: 'File backup không có dữ liệu bé nào!' };
+    }
+
+    // Save the imported data
+    saveAppData(data);
+
+    return {
+      success: true,
+      message: `Khôi phục thành công! Đã nhập ${data.children.length} bé.`
+    };
+  } catch {
+    return { success: false, message: 'Không thể đọc file backup. File có thể bị hỏng!' };
+  }
+};
