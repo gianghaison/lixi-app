@@ -27,6 +27,14 @@
 - Chuyển đổi giữa các bé dễ dàng
 - Mỗi bé có lịch sử giao dịch và hũ tiền riêng
 
+### 👋 Màn hình chào mừng (Onboarding)
+- 5 slide giới thiệu app cho người dùng mới
+- Giải thích mục đích: hỗ trợ bé quản lý tiền lì xì
+- Thông báo về lưu trữ local, không kết nối ngân hàng
+- Cảnh báo về các trường hợp mất dữ liệu
+- Lần đầu → vào Dashboard xem tính năng chính
+- Các lần sau → vào QR Code để giữ riêng tư
+
 ### 🔐 Bảo mật
 - Mã PIN 4 số bảo vệ dữ liệu
 - Tự động khóa sau 5 phút không hoạt động
@@ -68,7 +76,7 @@
 ```
 src/
 ├── components/
-│   ├── auth/           # PasscodeScreen, SetupWizard, NumericKeypad
+│   ├── auth/           # WelcomeScreen, PasscodeScreen, SetupWizard
 │   ├── bunny/          # BunnyMascot, SpeechBubble
 │   ├── common/         # Modal, Confetti, MoneyDisplay
 │   ├── dashboard/      # BalanceSummary, ActionButtons, TransactionList
@@ -157,7 +165,13 @@ Dự án được phát triển trong một đêm với sự hỗ trợ của **
 - Thông báo về lưu trữ local và các trường hợp mất dữ liệu
 - Hướng dẫn cho bố mẹ về thêm bé
 
-#### 🚀 Giai đoạn 9: Deploy
+#### 👋 Giai đoạn 9: Onboarding Experience
+- Tạo màn hình chào mừng 5 slide
+- Giải thích mục đích app và cách lưu trữ dữ liệu
+- Logic chuyển tab: lần đầu → Dashboard, sau đó → QR Code
+- Trải nghiệm người dùng mới mượt mà
+
+#### 🚀 Giai đoạn 10: Deploy
 - Khởi tạo Git repository
 - Push lên GitHub
 - Deploy lên Vercel
@@ -179,10 +193,10 @@ Dự án được phát triển trong một đêm với sự hỗ trợ của **
 - **Vercel**: Hosting & deployment
 
 ### Thống kê
-- **Thời gian phát triển**: ~4-5 giờ
-- **Số file tạo mới**: 47 files
-- **Số dòng code**: ~7,800 lines
-- **Số commit**: 2
+- **Thời gian phát triển**: ~5-6 giờ
+- **Số file tạo mới**: 48 files
+- **Số dòng code**: ~8,000 lines
+- **Số commit**: 5
 
 ---
 
