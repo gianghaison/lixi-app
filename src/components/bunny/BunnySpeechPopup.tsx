@@ -4,7 +4,7 @@ import BunnyMascot from './BunnyMascot';
 export type SpeechType = 'receive' | 'spend' | 'deposit';
 
 const MESSAGES: Record<SpeechType, string> = {
-  receive: 'Psst! Có ai xung quanh không? Đếm tiền lì xì phải kín đáo nha! Xem lì xì ngay khi nhận là bất lịch sự đó, tìm chỗ riêng tư nha! 🤫',
+  receive: 'Suỵt! Có ai xung quanh không? Đếm tiền lì xì phải kín đáo nha! Xem lì xì ngay khi nhận là bất lịch sự đó, tìm chỗ riêng tư nha! 🤫',
   spend: 'Khoan đã! Chi tiêu cần suy nghĩ kỹ nha. Hỏi ba mẹ trước khi tiêu tiền nhé! 🤔',
   deposit: 'Giỏi lắm! Đưa tiền cho người lớn giữ là thông minh nhất đó! Ba mẹ sẽ giữ an toàn cho con! 👍',
 };

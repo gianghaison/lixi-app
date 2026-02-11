@@ -1,7 +1,89 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { getActiveChild, addQRCode, deleteQRCode, getQRCodes } from '../../services/storage';
 import type { QRCode } from '../../types';
 import Modal from '../common/Modal';
+
+// Component nút giữ để xóa
+interface HoldToDeleteButtonProps {
+  onHoldComplete: () => void;
+  holdDuration?: number;
+}
+
+function HoldToDeleteButton({ onHoldComplete, holdDuration = 3000 }: HoldToDeleteButtonProps) {
+  const [isHolding, setIsHolding] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  const startHold = useCallback(() => {
+    setIsHolding(true);
+    setProgress(0);
+    startTimeRef.current = Date.now();
+
+    // Update progress every 50ms
+    progressIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const newProgress = Math.min((elapsed / holdDuration) * 100, 100);
+      setProgress(newProgress);
+    }, 50);
+
+    // Complete after hold duration
+    holdTimerRef.current = setTimeout(() => {
+      clearInterval(progressIntervalRef.current!);
+      setIsHolding(false);
+      setProgress(0);
+      onHoldComplete();
+    }, holdDuration);
+  }, [holdDuration, onHoldComplete]);
+
+  const cancelHold = useCallback(() => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    setIsHolding(false);
+    setProgress(0);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    };
+  }, []);
+
+  return (
+    <button
+      onMouseDown={startHold}
+      onMouseUp={cancelHold}
+      onMouseLeave={cancelHold}
+      onTouchStart={startHold}
+      onTouchEnd={cancelHold}
+      onTouchCancel={cancelHold}
+      className={`w-full py-3 rounded-xl font-semibold transition-all relative overflow-hidden ${
+        isHolding
+          ? 'bg-red-500 text-white'
+          : 'bg-red-100 text-red-500 hover:bg-red-200'
+      }`}
+    >
+      {/* Progress bar */}
+      {isHolding && (
+        <div
+          className="absolute inset-0 bg-red-600 transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      )}
+      <span className="relative z-10">
+        {isHolding
+          ? `⏳ Giữ thêm ${Math.ceil((holdDuration - (progress * holdDuration / 100)) / 1000)} giây...`
+          : '🗑️ Giữ 3 giây để xóa mã QR này'}
+      </span>
+    </button>
+  );
+}
 
 interface Article {
   id: string;
@@ -250,6 +332,11 @@ export default function QRCodeTab() {
   const [ownerName, setOwnerName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // State cho xác nhận xóa QR
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteQRTarget, setDeleteQRTarget] = useState<QRCode | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
+
   const loadQRCodes = () => {
     const child = getActiveChild();
     if (child) {
@@ -348,13 +435,39 @@ export default function QRCodeTab() {
     setOwnerName('');
   };
 
-  const handleRemoveQR = (qrCodeId: string) => {
+  // Bước 1: Sau khi giữ nút 3 giây, hiện popup xác nhận
+  const handleHoldComplete = (qr: QRCode) => {
+    setDeleteQRTarget(qr);
+    setDeleteConfirmName('');
+    setShowDeleteConfirm(true);
+    setSelectedQR(null);
+  };
+
+  // Bước 2: Xác nhận xóa sau khi nhập đúng tên
+  const handleConfirmDelete = () => {
+    if (!deleteQRTarget) return;
+
+    // Kiểm tra tên nhập vào có khớp không
+    if (deleteConfirmName.trim().toLowerCase() !== deleteQRTarget.ownerName.toLowerCase()) {
+      alert('Tên không đúng! Vui lòng nhập chính xác tên chủ tài khoản.');
+      return;
+    }
+
     const child = getActiveChild();
     if (child) {
-      deleteQRCode(child.id, qrCodeId);
+      deleteQRCode(child.id, deleteQRTarget.id);
       loadQRCodes();
-      setSelectedQR(null);
     }
+
+    setShowDeleteConfirm(false);
+    setDeleteQRTarget(null);
+    setDeleteConfirmName('');
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeleteQRTarget(null);
+    setDeleteConfirmName('');
   };
 
   const ownerSuggestions = ['Bố', 'Mẹ', 'Ông nội', 'Bà nội', 'Ông ngoại', 'Bà ngoại'];
@@ -432,12 +545,67 @@ export default function QRCodeTab() {
             <p className="text-amber-600 bg-amber-50 rounded-xl p-3 text-sm mb-4">
               💡 Tiền chuyển vào mã QR này sẽ do <strong>{selectedQR.ownerName}</strong> giữ hộ
             </p>
-            <button
-              onClick={() => handleRemoveQR(selectedQR.id)}
-              className="w-full py-3 bg-red-100 text-red-500 font-semibold rounded-xl hover:bg-red-200 transition-colors"
-            >
-              🗑️ Xóa mã QR này
-            </button>
+            <HoldToDeleteButton
+              onHoldComplete={() => handleHoldComplete(selectedQR)}
+              holdDuration={3000}
+            />
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal xác nhận xóa QR */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={handleCancelDelete}
+        title="⚠️ Xác nhận xóa mã QR"
+      >
+        {deleteQRTarget && (
+          <div>
+            <div className="text-center mb-4">
+              <p className="text-5xl mb-3">🗑️</p>
+              <p className="text-gray-600">
+                Bạn đang xóa mã QR của <strong className="text-pink-600">{deleteQRTarget.ownerName}</strong>
+              </p>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+              <p className="text-red-600 text-sm font-medium mb-2">
+                ⚠️ Hành động này không thể hoàn tác!
+              </p>
+              <p className="text-gray-600 text-sm">
+                Để xác nhận xóa, hãy nhập chính xác tên: <strong>{deleteQRTarget.ownerName}</strong>
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Nhập tên chủ tài khoản để xác nhận:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder={`Nhập "${deleteQRTarget.ownerName}"`}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg focus:border-red-400 focus:outline-none"
+                autoComplete="off"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDelete}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleteConfirmName.trim().toLowerCase() !== deleteQRTarget.ownerName.toLowerCase()}
+                className="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                Xóa mã QR
+              </button>
+            </div>
           </div>
         )}
       </Modal>

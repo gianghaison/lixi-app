@@ -5,11 +5,21 @@ import BunnyMascot from '../bunny/BunnyMascot';
 interface BalanceSummaryProps {
   balances: ChildBalances;
   onWithdraw?: (guardianName: string, maxAmount: number) => void;
+  quote?: string;
 }
 
-export default function BalanceSummary({ balances, onWithdraw }: BalanceSummaryProps) {
+export default function BalanceSummary({ balances, onWithdraw, quote }: BalanceSummaryProps) {
   return (
     <div className="bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 rounded-3xl p-6 mx-4 text-white shadow-xl">
+      {/* Quote */}
+      {quote && (
+        <div className="bg-white/15 backdrop-blur rounded-2xl px-4 py-3 mb-4">
+          <p className="text-sm text-white/95 italic text-center leading-relaxed">
+            ✨ "{quote}"
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <p className="text-lg font-bold opacity-90 mb-2">🧧 Tổng tiền lì xì</p>

@@ -91,7 +91,7 @@ App quản lý tiền lì xì cho trẻ em Việt Nam, dịp Tết.
 - Bé đầu tiên tạo cùng lúc đặt passcode
 
 ### Nhận lì xì
-1. Bunny ngó trái phải (animation look_around) + speech bubble: "Psst! Có ai xung quanh không? Đếm tiền lì xì phải kín đáo nha! 🤫"
+1. Bunny ngó trái phải (animation look_around) + speech bubble: "Suỵt! Có ai xung quanh không? Đếm tiền lì xì phải kín đáo nha! 🤫"
 2. Form nhập:
    - Số tiền: input số + **label suggestions** để chọn nhanh: 10,000 | 20,000 | 50,000 | 100,000 | 200,000 | 500,000
    - Ghi chú: ai lì xì (ví dụ: "Bà ngoại", "Chú Tư")

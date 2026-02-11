@@ -6,11 +6,12 @@ interface TransactionListProps {
   onEdit?: (transaction: Transaction) => void;
 }
 
-const typeConfig = {
+const typeConfig: Record<string, { icon: string; label: string; color: string }> = {
   receive: { icon: '🧧', label: 'Nhận lì xì', color: 'text-emerald-500' },
   spend: { icon: '💸', label: 'Chi tiêu', color: 'text-orange-400' },
   deposit: { icon: '🏦', label: 'Gửi giữ hộ', color: 'text-purple-400' },
   withdraw: { icon: '💰', label: 'Nhận lại tiền', color: 'text-emerald-500' },
+  spend_from_guardian: { icon: '🛍️', label: 'Chi tiêu (người giữ thanh toán)', color: 'text-orange-400' },
 };
 
 function formatDate(dateString: string): string {
@@ -38,8 +39,8 @@ export default function TransactionList({ transactions, onEdit }: TransactionLis
       <h3 className="text-lg font-bold text-gray-800 mb-3">Lịch sử giao dịch</h3>
       <div className="space-y-2">
         {transactions.map((tx) => {
-          const config = typeConfig[tx.type];
-          const isNegative = tx.type === 'spend' || tx.type === 'deposit';
+          const config = typeConfig[tx.type] || { icon: '❓', label: 'Giao dịch', color: 'text-gray-500' };
+          const isNegative = tx.type === 'spend' || tx.type === 'deposit' || tx.type === 'spend_from_guardian';
 
           return (
             <div

@@ -23,7 +23,7 @@ export interface Child {
 
 export interface Transaction {
   id: string;
-  type: 'receive' | 'spend' | 'deposit' | 'withdraw';
+  type: 'receive' | 'spend' | 'deposit' | 'withdraw' | 'spend_from_guardian';
   amount: number;
   note: string;
   date: string;

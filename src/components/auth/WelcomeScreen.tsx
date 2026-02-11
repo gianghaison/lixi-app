@@ -13,7 +13,7 @@ const slides = [
   {
     emoji: '📝',
     title: 'Ghi chép đơn giản',
-    content: 'Bé có thể ghi lại tiền lì xì nhận được, theo dõi chi tiêu, và gửi tiền cho bố mẹ giữ hộ. Tất cả trong một ứng dụng dễ sử dụng!',
+    content: 'Bé có thể tự ghi lại tiền lì xì nhận được, theo dõi chi tiêu, và gửi tiền cho bố mẹ giữ hộ. Khuyến khích bé tự ghi chép để con có ý thức về dòng tiền và học cách quản lý tài chính từ nhỏ!',
   },
   {
     emoji: '🔒',

@@ -138,6 +138,18 @@ export const addTransaction = (childId: string, transaction: Omit<Transaction, '
     }
   }
 
+  // Trừ guardian amount nếu là spend_from_guardian (chi tiêu từ tiền người giữ hộ)
+  if (transaction.type === 'spend_from_guardian' && transaction.guardian) {
+    const guardian = child.guardians.find((g) => g.name === transaction.guardian);
+    if (guardian) {
+      guardian.amount -= transaction.amount;
+      // Xóa guardian nếu amount = 0
+      if (guardian.amount <= 0) {
+        child.guardians = child.guardians.filter((g) => g.name !== transaction.guardian);
+      }
+    }
+  }
+
   saveAppData(data);
 };
 
@@ -171,7 +183,7 @@ export const deleteTransaction = (childId: string, transactionId: string): boole
     if (guardian) {
       if (transaction.type === 'deposit') {
         guardian.amount -= transaction.amount;
-      } else if (transaction.type === 'withdraw') {
+      } else if (transaction.type === 'withdraw' || transaction.type === 'spend_from_guardian') {
         guardian.amount += transaction.amount;
       }
       // Xóa guardian nếu amount <= 0
@@ -206,14 +218,14 @@ export const updateTransaction = (
   const transaction = child.transactions.find((t) => t.id === transactionId);
   if (!transaction) return;
 
-  // Nếu là deposit hoặc withdraw và amount thay đổi, cần cập nhật guardian
+  // Nếu là deposit hoặc withdraw/spend_from_guardian và amount thay đổi, cần cập nhật guardian
   if (transaction.guardian && updates.amount !== undefined) {
     const guardian = child.guardians.find((g) => g.name === transaction.guardian);
     if (guardian) {
       const diff = updates.amount - transaction.amount;
       if (transaction.type === 'deposit') {
         guardian.amount += diff;
-      } else if (transaction.type === 'withdraw') {
+      } else if (transaction.type === 'withdraw' || transaction.type === 'spend_from_guardian') {
         guardian.amount -= diff;
       }
       // Xóa guardian nếu amount <= 0
