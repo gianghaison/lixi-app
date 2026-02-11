@@ -12,8 +12,8 @@ interface HoldToDeleteButtonProps {
 function HoldToDeleteButton({ onHoldComplete, holdDuration = 3000 }: HoldToDeleteButtonProps) {
   const [isHolding, setIsHolding] = useState(false);
   const [progress, setProgress] = useState(0);
-  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
   const startHold = useCallback(() => {

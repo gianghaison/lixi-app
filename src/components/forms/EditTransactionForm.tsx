@@ -12,11 +12,12 @@ interface EditTransactionFormProps {
   childId: string;
 }
 
-const typeLabels = {
+const typeLabels: Record<string, string> = {
   receive: '🧧 Nhận lì xì',
   spend: '💸 Chi tiêu',
   deposit: '🏦 Gửi giữ hộ',
   withdraw: '💰 Nhận lại tiền',
+  spend_from_guardian: '🛍️ Chi tiêu (người giữ thanh toán)',
 };
 
 export default function EditTransactionForm({
