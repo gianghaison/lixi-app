@@ -3,23 +3,34 @@ import AppContainer from './components/layout/AppContainer';
 import BottomTabBar from './components/layout/BottomTabBar';
 import PasscodeScreen from './components/auth/PasscodeScreen';
 import SetupWizard from './components/auth/SetupWizard';
+import WelcomeScreen from './components/auth/WelcomeScreen';
 import QRCodeTab from './components/tabs/QRCodeTab';
 import DashboardTab from './components/tabs/DashboardTab';
 import SettingsTab from './components/tabs/SettingsTab';
 import { isFirstTime, isSessionExpired, updateLastActiveTimestamp } from './services/storage';
 import type { TabType } from './types';
 
+const WELCOME_SEEN_KEY = 'lixi_welcome_seen';
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('qr');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [showPasscode, setShowPasscode] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check initial state
   useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY) === 'true';
+
     if (isFirstTime()) {
-      setNeedsSetup(true);
+      // First time ever - show welcome then setup
+      if (!hasSeenWelcome) {
+        setShowWelcome(true);
+      } else {
+        setNeedsSetup(true);
+      }
     } else if (isSessionExpired()) {
       setShowPasscode(true);
     } else {
@@ -86,9 +97,17 @@ function App() {
     setShowPasscode(false);
   };
 
+  const handleWelcomeComplete = () => {
+    localStorage.setItem(WELCOME_SEEN_KEY, 'true');
+    setShowWelcome(false);
+    setNeedsSetup(true);
+  };
+
   const handleSetupComplete = () => {
     setNeedsSetup(false);
     setIsAuthenticated(true);
+    // Lần đầu tiên sau setup → vào Dashboard để thấy tính năng chính
+    setActiveTab('dashboard');
   };
 
   if (isLoading) {
@@ -102,6 +121,11 @@ function App() {
         </div>
       </AppContainer>
     );
+  }
+
+  // Welcome screen for first time users
+  if (showWelcome) {
+    return <WelcomeScreen onComplete={handleWelcomeComplete} />;
   }
 
   // First time setup
