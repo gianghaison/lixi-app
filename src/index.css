@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+@theme {
+  /* Bảng màu dễ thương cho trẻ em - Pastel colors */
+  --color-tet-red: #F472B6;          /* Hồng pastel */
+  --color-tet-red-dark: #EC4899;     /* Hồng đậm hơn */
+  --color-tet-yellow: #FBBF24;       /* Vàng tươi */
+  --color-tet-yellow-light: #FEF3C7; /* Vàng kem nhạt */
+  --color-tet-orange: #FB923C;       /* Cam đào */
+  --color-tet-green: #34D399;        /* Xanh mint */
+  --color-tet-cream: #FFF7ED;        /* Kem nhạt */
+  --color-tet-purple: #A78BFA;       /* Tím lavender */
+  --color-tet-blue: #60A5FA;         /* Xanh dương pastel */
+  --color-tet-teal: #2DD4BF;         /* Xanh ngọc */
+  --font-family-display: 'Nunito', system-ui, sans-serif;
+}
+
+* {
+  font-family: var(--font-family-display);
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Cute pastel background for kids */
+.tet-background {
+  background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 25%, #DBEAFE 50%, #D1FAE5 75%, #FEF3C7 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Hide scrollbar but allow scrolling */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area for iOS */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Animation for speech bubble */
+@keyframes bounce-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.3s ease-out;
+}
+
+/* Money display animation */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-count-up {
+  animation: count-up 0.4s ease-out;
+}
+
+/* Bunny mascot - transparent background */
+.bunny-container canvas,
+.mascot-container canvas {
+  background: transparent !important;
+}
+
+/* Cute floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Sparkle effect */
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* Pulse effect for main button */
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.animate-pulse-scale {
+  animation: pulse-scale 2s ease-in-out infinite;
+}
+
+/* Ripple wave effect */
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.ripple-wave {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(236,72,153,0.3) 100%);
+  animation: ripple 2s ease-out infinite;
+}
+
+.ripple-wave-2 {
+  animation-delay: 0.6s;
+}
+
+.ripple-wave-3 {
+  animation-delay: 1.2s;
+}
+
+/* Confetti fall animation */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.animate-confetti-fall {
+  animation: confetti-fall 3s ease-out forwards;
+}
+
+/* Emoji float up animation */
+@keyframes emoji-float {
+  0% {
+    transform: translateY(0) scale(0);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(-20vh) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-80vh) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-emoji-float {
+  animation: emoji-float 2.5s ease-out forwards;
+}
+
+/* Burst glow animation */
+@keyframes burst-glow {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-burst-glow {
+  animation: burst-glow 0.8s ease-out forwards;
+}
+
+/* Burst particle animation */
+@keyframes burst-particle {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--burst-x), var(--burst-y)) scale(0);
+    opacity: 0;
+  }
+}
+
+.animate-burst-particle {
+  animation: burst-particle 0.8s ease-out forwards;
+}
