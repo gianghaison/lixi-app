@@ -9,7 +9,9 @@ import DepositForm from '../forms/DepositForm';
 import WithdrawForm from '../forms/WithdrawForm';
 import EditTransactionForm from '../forms/EditTransactionForm';
 import BunnySpeechPopup, { type SpeechType } from '../bunny/BunnySpeechPopup';
+import Modal from '../common/Modal';
 import { getActiveChild, calculateBalances, getTransactions } from '../../services/storage';
+import { formatMoney } from '../../utils/formatMoney';
 import type { Child, ChildBalances, Transaction } from '../../types';
 
 export default function DashboardTab() {
@@ -24,6 +26,7 @@ export default function DashboardTab() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [speechType, setSpeechType] = useState<SpeechType | null>(null);
+  const [showAllDepositedPopup, setShowAllDepositedPopup] = useState(false);
 
   const refreshData = useCallback(() => {
     const child = getActiveChild();
@@ -47,6 +50,11 @@ export default function DashboardTab() {
   };
 
   const handleDeposit = () => {
+    // Nếu không còn tiền đang giữ, hiển thị popup danh sách người giữ hộ
+    if (balances.holding <= 0 && balances.guardians.length > 0) {
+      setShowAllDepositedPopup(true);
+      return;
+    }
     setSpeechType('deposit');
   };
 
@@ -146,6 +154,56 @@ export default function DashboardTab() {
         transaction={editingTransaction}
         childId={activeChild?.id || ''}
       />
+
+      {/* Popup khi tiền đã gửi hết */}
+      <Modal
+        isOpen={showAllDepositedPopup}
+        onClose={() => setShowAllDepositedPopup(false)}
+        title="🏦 Tiền đã gửi hết rồi!"
+      >
+        <div className="text-center mb-6">
+          <p className="text-5xl mb-4">✨</p>
+          <p className="text-gray-600 mb-4">
+            Tuyệt vời! Bé đã gửi hết tiền cho người lớn giữ hộ rồi!
+          </p>
+        </div>
+
+        <div className="bg-gray-50 rounded-2xl p-4 mb-6">
+          <p className="font-semibold text-gray-700 mb-3">Danh sách người giữ hộ:</p>
+          <div className="space-y-2">
+            {balances.guardians.map((guardian) => (
+              <div
+                key={guardian.name}
+                className="flex justify-between items-center bg-white rounded-xl px-4 py-3 shadow-sm"
+              >
+                <span className="text-gray-700 font-medium">
+                  🧑‍🦳 {guardian.name}
+                </span>
+                <span className="text-pink-600 font-bold">
+                  {formatMoney(guardian.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
+            <span className="text-gray-700 font-bold">Tổng cộng:</span>
+            <span className="text-pink-600 font-bold text-lg">
+              {formatMoney(balances.guardianTotal)}
+            </span>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-500 text-center mb-4">
+          💡 Khi cần tiền, bé có thể bấm "Nhận lại" ở mục người giữ hộ nhé!
+        </p>
+
+        <button
+          onClick={() => setShowAllDepositedPopup(false)}
+          className="w-full py-3 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold rounded-xl hover:opacity-90 transition-all"
+        >
+          Đã hiểu!
+        </button>
+      </Modal>
     </div>
   );
 }
