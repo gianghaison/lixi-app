@@ -1,5 +1,7 @@
 import { useRive } from '@rive-app/react-canvas';
 
+export type BunnyAction = 'idle' | 'look_around' | 'wave1' | 'wave2' | 'write_note' | 'shake_head' | 'walk';
+
 interface MascotProps {
   size?: number;
   className?: string;
